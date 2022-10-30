@@ -18,6 +18,11 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
+### HYPER PARAMETERS ###
+no_of_epochs = 100
+batch_size = 64
+learning_rate = 0.005
+
 # Data
 print('==> Preparing data..')
 transform_train = transforms.Compose([
@@ -35,12 +40,12 @@ transform_test = transforms.Compose([
 trainset = torchvision.datasets.EMNIST(
     root='./data', split='bymerge', train=True, download=True, transform=transform_train)
 trainloader = torch.utils.data.DataLoader(
-    trainset, batch_size=64, shuffle=True, num_workers=2)
+    trainset, batch_size=batch_size, shuffle=True, num_workers=2)
 
 testset = torchvision.datasets.EMNIST(
     root='./data', split='bymerge', train=False, download=True, transform=transform_test)
 testloader = torch.utils.data.DataLoader(
-    testset, batch_size=64, shuffle=False, num_workers=2)
+    testset, batch_size=batch_size, shuffle=False, num_workers=2)
 
 # Model
 print('==> Building model..')
@@ -66,7 +71,7 @@ if device == 'cuda':
     cudnn.benchmark = True
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.005,
+optimizer = optim.SGD(net.parameters(), lr=learning_rate,
                       momentum=0.9, weight_decay=5e-4)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
@@ -144,7 +149,7 @@ def test(epoch):
     torch.save(state, './checkpoint/ckpt.pth')
 
 
-for epoch in range(start_epoch, start_epoch + 100):
+for epoch in range(start_epoch, start_epoch + no_of_epochs):
     train(epoch)
     test(epoch)
     scheduler.step()
